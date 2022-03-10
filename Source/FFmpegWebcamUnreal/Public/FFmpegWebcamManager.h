@@ -16,6 +16,16 @@ extern "C"
 
 #include "FFmpegWebcamManager.generated.h"
 
+
+UENUM()
+enum EFFMPEG_Platform
+{
+	FFMPEG_WINDOWS     UMETA(DisplayName = "Windows"),
+	FFMPEG_MAC   UMETA(DisplayName = "Mac"),
+};
+
+
+
 /**
  * 
  */
@@ -37,10 +47,13 @@ public:
 	void DrawToCanvas(UCanvas* canvas);
 
 	UPROPERTY(EditAnywhere)
-	FString inputFormat;
+	TEnumAsByte<EFFMPEG_Platform> platform;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_WINDOWS", EditConditionHides))
 	FString cameraName;
+
+	UPROPERTY(EditAnywhere, meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_MAC", EditConditionHides))
+	FString cameraIndex;
 
 	UPROPERTY(EditAnywhere)
 	FIntPoint videoSize;

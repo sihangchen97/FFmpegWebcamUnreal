@@ -1,9 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include <string>
-
 #include "FFmpegWebcamManager.h"
 #include "Engine/Canvas.h"
+#include "HAL/Platform.h"
 
 void UFFmpegWebcamManager::OpenCamera(bool &status)
 {
@@ -11,7 +10,12 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 
 	avdevice_register_all();
 	pFormatContext = avformat_alloc_context();
-	AVInputFormat *ifmt=av_find_input_format(TCHAR_TO_ANSI(*inputFormat));
+	AVInputFormat *ifmt=NULL;
+#if PLATFORM_WINDOWS
+	ifmt = av_find_input_format("dshow");
+#elif PLATFORM_MAC
+	ifmt = av_find_input_format("avfoundation");
+#endif
 	if(ifmt == NULL){
 		UE_LOG(LogTemp, Warning, TEXT("Input Format Error"));
 		return;
@@ -19,9 +23,15 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 	
 	AVDictionary* options = NULL;
 	av_dict_set(&options, "pixel_format", TCHAR_TO_ANSI(*pixelFormat), 0);
-	av_dict_set(&options, "video_size", (std::to_string(videoSize.X)+"x"+std::to_string(videoSize.Y)).c_str(), 0);
-	av_dict_set(&options, "r", std::to_string(frameRate).c_str(), NULL);
-	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*(FString("video=")+cameraName)), ifmt, &options) !=0){
+	av_dict_set(&options, "video_size", TCHAR_TO_ANSI(*(FString::FromInt(videoSize.X)+"x"+FString::FromInt(videoSize.Y))), 0);
+	av_dict_set(&options, "r", TCHAR_TO_ANSI(*(FString::FromInt(frameRate))), 0);
+
+#if PLATFORM_WINDOWS
+	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*(FString("video=")+cameraName)), ifmt, &options) !=0)
+#elif PLATFORM_MAC
+	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*cameraIndex), ifmt, &options) !=0)
+#endif
+	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to Open Camera"));
 		return;
 	}
