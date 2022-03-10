@@ -11,36 +11,51 @@ public class FFmpegWebcamUnreal : ModuleRules
 	public bool LoadffmpegLib(ReadOnlyTargetRules Target)
 	{
 		bool isLibararySupported = false;
-		if ((Target.Platform == UnrealTargetPlatform.Win64) || (Target.Platform == UnrealTargetPlatform.Win32))
+		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			isLibararySupported = true;
 			string LibraryPath = Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1", "lib","Win64");
-			PublicAdditionalLibraries.Add(Path.Combine(LibraryPath, "avcodec.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(LibraryPath, "avdevice.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(LibraryPath, "avfilter.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(LibraryPath, "avformat.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(LibraryPath, "avutil.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(LibraryPath, "postproc.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(LibraryPath, "swresample.lib"));
-			PublicAdditionalLibraries.Add(Path.Combine(LibraryPath, "swscale.lib"));
+
+			string[] libs =
+			{
+				"avcodec.lib", "avdevice.lib", "avfilter.lib", "avformat.lib", "avutil.lib", "postproc.lib",
+				"swresample.lib", "swscale.lib"
+			};
+
+			foreach (string lib in libs)
+			{
+				PublicAdditionalLibraries.Add(Path.Combine(LibraryPath, lib));
+			}
+
+			string[] dlls =
+			{
+				"avcodec-58.dll", "avdevice-58.dll", "avfilter-7.dll", "avformat-58.dll", "avutil-56.dll",
+				"postproc-55.dll", "swresample-3.dll", "swscale-5.dll"
+			};
+
+			foreach (string dll in dlls)
+			{
+				PublicDelayLoadDLLs.Add(dll);
+				RuntimeDependencies.Add(Path.Combine(LibraryPath, dll), StagedFileType.NonUFS);
+			}
+		}
+
+		if (Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			isLibararySupported = true;
+			string LibraryPath = Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1", "lib","Mac");
 			
-			PublicDelayLoadDLLs.Add( "avcodec-58.dll");
-			PublicDelayLoadDLLs.Add( "avdevice-58.dll");
-			PublicDelayLoadDLLs.Add( "avfilter-7.dll");
-			PublicDelayLoadDLLs.Add( "avformat-58.dll");
-			PublicDelayLoadDLLs.Add( "avutil-56.dll");
-			PublicDelayLoadDLLs.Add( "postproc-55.dll");
-			PublicDelayLoadDLLs.Add( "swresample-3.dll");
-			PublicDelayLoadDLLs.Add( "swscale-5.dll");
-			
-			RuntimeDependencies.Add(new RuntimeDependency(LibraryPath + "avcodec-58.dll"));
-			RuntimeDependencies.Add(new RuntimeDependency(LibraryPath + "avdevice-58.dll"));
-			RuntimeDependencies.Add(new RuntimeDependency(LibraryPath + "avfilter-7.dll"));
-			RuntimeDependencies.Add(new RuntimeDependency(LibraryPath + "avformat-58.dll"));
-			RuntimeDependencies.Add(new RuntimeDependency(LibraryPath + "avutil-56.dll"));
-			RuntimeDependencies.Add(new RuntimeDependency(LibraryPath + "postproc-55.dll"));
-			RuntimeDependencies.Add(new RuntimeDependency(LibraryPath + "swresample-3.dll"));
-			RuntimeDependencies.Add(new RuntimeDependency(LibraryPath + "swscale-5.dll"));
+			string[] dylibs =
+			{
+				"libavcodec.dylib", "libavdevice.dylib", "libavfilter.dylib","libavformat.dylib", "libavresample.dylib",
+				"libavutil.dylib", "libpostproc.dylib", "libswresample.dylib", "libswscale.dylib"
+			} ;
+
+			foreach (string dylib in dylibs)
+			{
+				PublicAdditionalLibraries.Add(Path.Combine(LibraryPath, dylib));
+				RuntimeDependencies.Add(Path.Combine(LibraryPath, dylib), StagedFileType.NonUFS);
+			}
 		}
 		return isLibararySupported;
 	}
