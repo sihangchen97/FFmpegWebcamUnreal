@@ -24,7 +24,7 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 	AVDictionary* options = NULL;
 	av_dict_set(&options, "pixel_format", TCHAR_TO_ANSI(*pixelFormat), 0);
 	av_dict_set(&options, "video_size", TCHAR_TO_ANSI(*(FString::FromInt(videoSize.X)+"x"+FString::FromInt(videoSize.Y))), 0);
-	av_dict_set(&options, "r", TCHAR_TO_ANSI(*(FString::FromInt(frameRate))), 0);
+	av_dict_set(&options, "framerate", TCHAR_TO_ANSI(*(FString::FromInt(frameRate))), 0);
 
 #if PLATFORM_WINDOWS
 	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*(FString("video=")+cameraName)), ifmt, &options) !=0)

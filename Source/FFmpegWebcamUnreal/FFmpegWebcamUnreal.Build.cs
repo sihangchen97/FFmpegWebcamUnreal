@@ -47,8 +47,8 @@ public class FFmpegWebcamUnreal : ModuleRules
 			
 			string[] dylibs =
 			{
-				"libavcodec.dylib", "libavdevice.dylib", "libavfilter.dylib","libavformat.dylib", "libavresample.dylib",
-				"libavutil.dylib", "libpostproc.dylib", "libswresample.dylib", "libswscale.dylib"
+				"libavcodec.58.134.100.dylib", "libavdevice.58.13.100.dylib", "libavfilter.7.110.100.dylib","libavformat.58.76.100.dylib", "libavresample.4.0.0.dylib",
+				"libavutil.56.70.100.dylib", "libpostproc.55.9.100.dylib", "libswresample.3.9.100.dylib", "libswscale.5.9.100.dylib"
 			} ;
 
 			foreach (string dylib in dylibs)
