@@ -59,7 +59,13 @@ public:
 	float frameRate;
 	
 	UPROPERTY(EditAnywhere)
+	bool useVcodec;
+	
+	UPROPERTY(EditAnywhere, meta=(EditCondition="!useVcodec", EditConditionHides))
 	FString pixelFormat;
+	
+	UPROPERTY(EditAnywhere, meta=(EditCondition="useVcodec", EditConditionHides))
+	FString vcodec;
 	
 	int bufSize_bgra;
 	uint8_t* buffer_bgra;
