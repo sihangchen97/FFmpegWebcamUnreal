@@ -16,6 +16,13 @@ extern "C"
 
 #include "FFmpegWebcamManager.generated.h"
 
+UENUM()
+enum EFFMPEG_Platform
+{
+	FFMPEG_WINDOWS     UMETA(DisplayName = "Windows"),
+	FFMPEG_MAC   UMETA(DisplayName = "Mac"),
+};
+
 /**
  * 
  */
@@ -24,22 +31,25 @@ class FFMPEGWEBCAMUNREAL_API UFFmpegWebcamManager : public UDataAsset
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam Testing", meta=(ExpandBoolAsExecs = status))
+	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam", meta=(ExpandBoolAsExecs = status))
 	void OpenCamera(bool &status);
 
-	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam Testing")
+	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam")
 	void CloseCamera();
 
-	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam Testing", meta=(ExpandBoolAsExecs = status))
+	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam", meta=(ExpandBoolAsExecs = status))
 	void ReadFrame(bool &status);
 
-	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam Testing")
+	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam")
 	void DrawToCanvas(UCanvas* canvas);
+
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<EFFMPEG_Platform> platform;
 	
-	UPROPERTY(EditAnywhere, meta=(EditCondition="PLATFORM_WINDOWS", EditConditionHides))
+	UPROPERTY(EditAnywhere, meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_WINDOWS", EditConditionHides))
 	FString cameraName;
 
-	UPROPERTY(EditAnywhere, meta=(EditCondition="PLATFORM_MAC", EditConditionHides))
+	UPROPERTY(EditAnywhere, meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_MAC", EditConditionHides))
 	FString cameraIndex;
 
 	UPROPERTY(EditAnywhere)
@@ -55,7 +65,6 @@ public:
 	uint8_t* buffer_bgra;
 
 private:
-
 	AVFormatContext* pFormatContext;
 	AVStream* videoStream;
 	AVCodec* pCodec;

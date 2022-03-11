@@ -2,7 +2,6 @@
 
 #include "FFmpegWebcamManager.h"
 #include "Engine/Canvas.h"
-#include "HAL/Platform.h"
 
 void UFFmpegWebcamManager::OpenCamera(bool &status)
 {
