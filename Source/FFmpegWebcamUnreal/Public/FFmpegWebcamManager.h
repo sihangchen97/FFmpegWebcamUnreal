@@ -66,9 +66,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, meta=(EditCondition="useVcodec", EditConditionHides))
 	FString vcodec;
-	
-	int bufSize_bgra;
-	uint8_t* buffer_bgra;
+
+	UPROPERTY(BlueprintReadOnly)
+	TArray<int32> imageBufferBRGA;
 
 private:
 	AVFormatContext* pFormatContext;
@@ -77,7 +77,6 @@ private:
 	AVCodecContext* pCodecContext;
 	AVPacket* packet;
 	AVFrame* frame;
-	
 	
 	AVFrame* frame_bgra;
 	SwsContext* swsContext_bgra;

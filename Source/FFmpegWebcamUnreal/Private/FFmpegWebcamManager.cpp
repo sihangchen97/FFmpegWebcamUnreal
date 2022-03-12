@@ -81,9 +81,9 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 	frame = av_frame_alloc();
 	frame_bgra = av_frame_alloc();
 	
-	bufSize_bgra = av_image_get_buffer_size(AV_PIX_FMT_BGRA, videoSize.X, videoSize.Y, 1);
-	buffer_bgra = (uint8_t*)av_malloc(bufSize_bgra);
-	av_image_fill_arrays(frame_bgra->data, frame_bgra->linesize, buffer_bgra, AV_PIX_FMT_BGRA, videoSize.X, videoSize.Y, 1);
+	imageBufferBRGA.SetNum(videoSize.X * videoSize.Y);
+	
+	av_image_fill_arrays(frame_bgra->data, frame_bgra->linesize, (uint8_t*)imageBufferBRGA.GetData(), AV_PIX_FMT_BGRA, videoSize.X, videoSize.Y, 1);
 	frame_bgra->format = AV_PIX_FMT_BGRA;
 
 	swsContext_bgra = sws_getContext(videoSize.X, videoSize.Y, pCodecContext->pix_fmt,
@@ -130,7 +130,7 @@ void UFFmpegWebcamManager::DrawToCanvas(UCanvas* canvas)
 {
 	UTexture2D* Pointer = UTexture2D::CreateTransient(videoSize.X, videoSize.Y, PF_B8G8R8A8);
 	uint8* MipData = static_cast<uint8*>(Pointer->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
-	FMemory::Memcpy(MipData, buffer_bgra, videoSize.X * videoSize.Y * 4);
+	FMemory::Memcpy(MipData, imageBufferBRGA.GetData(), videoSize.X * videoSize.Y * 4);
 	Pointer->PlatformData->Mips[0].BulkData.Unlock();
 	Pointer->UpdateResource();
 	canvas->K2_DrawTexture(Pointer,FVector2D(0,0),FVector2D(canvas->SizeX,canvas->SizeY),FVector2D(0,0));
