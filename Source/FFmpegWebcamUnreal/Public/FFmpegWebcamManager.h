@@ -43,31 +43,31 @@ public:
 	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam")
 	void DrawToCanvas(UCanvas* canvas);
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Webcam Config")
 	TEnumAsByte<EFFMPEG_Platform> platform;
 	
-	UPROPERTY(EditAnywhere, meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_WINDOWS", EditConditionHides))
+	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_WINDOWS", EditConditionHides))
 	FString cameraName;
 
-	UPROPERTY(EditAnywhere, meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_MAC", EditConditionHides))
+	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_MAC", EditConditionHides))
 	FString cameraIndex;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Webcam Config")
 	FIntPoint videoSize;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Webcam Config")
 	float frameRate;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Webcam Config")
 	bool useVcodec;
 	
-	UPROPERTY(EditAnywhere, meta=(EditCondition="!useVcodec", EditConditionHides))
+	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(EditCondition="!useVcodec", EditConditionHides))
 	FString pixelFormat;
 	
-	UPROPERTY(EditAnywhere, meta=(EditCondition="useVcodec", EditConditionHides))
+	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(EditCondition="useVcodec", EditConditionHides))
 	FString vcodec;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="Image Buffer")
 	TArray<int32> imageBufferBRGA;
 
 private:
