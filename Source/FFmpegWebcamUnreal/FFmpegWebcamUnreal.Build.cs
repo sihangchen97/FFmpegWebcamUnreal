@@ -14,7 +14,10 @@ public class FFmpegWebcamUnreal : ModuleRules
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			isLibararySupported = true;
-			string LibraryPath = Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1", "lib","Win64");
+			PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1-Win64", "include"));
+            PrivateIncludePaths.Add(Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1-Win64", "include"));
+            
+			string LibraryPath = Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1-Win64", "lib");
 
 			string[] libs =
 			{
@@ -43,7 +46,10 @@ public class FFmpegWebcamUnreal : ModuleRules
 		if (Target.Platform == UnrealTargetPlatform.Mac)
 		{
 			isLibararySupported = true;
-			string LibraryPath = Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1", "lib","Mac");
+			PublicIncludePaths.Add(Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1-Mac", "include"));
+			PrivateIncludePaths.Add(Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1-Mac", "include"));
+			
+			string LibraryPath = Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1-Mac", "lib");
 			
 			string[] dylibs =
 			{
@@ -63,31 +69,14 @@ public class FFmpegWebcamUnreal : ModuleRules
 	public FFmpegWebcamUnreal(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
-		
-		PublicIncludePaths.AddRange(
-			new string[] {
-				// ... add public include paths required here ...
-				Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1", "include"),
-			}
-			);
-				
-		
-		PrivateIncludePaths.AddRange(
-			new string[] {
-				// ... add other private include paths required here ...
-				Path.Combine(ThirdPartyPath, "ffmpeg-4.4.1", "include"),
-			}
-			);
 			
-		
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
 				"Core",
 				// ... add other public dependencies that you statically link with here ...
 			}
-			);
-			
+			);	
 		
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
@@ -97,14 +86,6 @@ public class FFmpegWebcamUnreal : ModuleRules
 				"Slate",
 				"SlateCore",
 				// ... add private dependencies that you statically link with here ...	
-			}
-			);
-		
-		
-		DynamicallyLoadedModuleNames.AddRange(
-			new string[]
-			{
-				// ... add any modules that your module loads dynamically here ...
 			}
 			);
 		
