@@ -3,6 +3,13 @@
 #include "FFmpegWebcamManager.h"
 #include "Engine/Canvas.h"
 
+void AFFmpegWebcamManagerDaemon::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	avcodec_close(pCodecContext);
+	avformat_close_input(&pFormatContext);
+}
+
 void UFFmpegWebcamManager::OpenCamera(bool &status)
 {
 	status = false;
@@ -28,7 +35,6 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 		av_dict_set(&options, "vcodec", TCHAR_TO_ANSI(*vcodec), 0);
 	else
 		av_dict_set(&options, "pixel_format", TCHAR_TO_ANSI(*pixelFormat), 0);
-	
 
 #if PLATFORM_WINDOWS
 	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*(FString("video=")+cameraName)), ifmt, &options) !=0)
@@ -94,20 +100,25 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 		return;
 	}
 	status = true;
-	isOpen = true;
+
+	daemonActor = (AFFmpegWebcamManagerDaemon*) GWorld->SpawnActor(AFFmpegWebcamManagerDaemon::StaticClass());
+	daemonActor->pFormatContext = pFormatContext;
+	daemonActor->pCodecContext = pCodecContext;
 }
 
 void UFFmpegWebcamManager::CloseCamera()
 {
-	avcodec_close(pCodecContext);
-	avformat_close_input(&pFormatContext);
+	if(CheckValid())
+	{
+		daemonActor->Destroy();
+		daemonActor = nullptr;
+	}
 }
-
 
 void UFFmpegWebcamManager::ReadFrame(bool &status)
 {
 	status = false;
-	if(!isOpen)return;
+	if(!CheckValid())return;
 	
 	av_packet_unref(packet);
 	if(av_read_frame(pFormatContext, packet)<0)
@@ -128,6 +139,7 @@ void UFFmpegWebcamManager::ReadFrame(bool &status)
 
 void UFFmpegWebcamManager::DrawToCanvas(UCanvas* canvas)
 {
+	if(!CheckValid())return;
 	UTexture2D* Pointer = UTexture2D::CreateTransient(videoSize.X, videoSize.Y, PF_B8G8R8A8);
 	uint8* MipData = static_cast<uint8*>(Pointer->PlatformData->Mips[0].BulkData.Lock(LOCK_READ_WRITE));
 	FMemory::Memcpy(MipData, imageBufferBRGA.GetData(), videoSize.X * videoSize.Y * 4);
@@ -135,4 +147,14 @@ void UFFmpegWebcamManager::DrawToCanvas(UCanvas* canvas)
 	Pointer->UpdateResource();
 	canvas->K2_DrawTexture(Pointer,FVector2D(0,0),FVector2D(canvas->SizeX,canvas->SizeY),FVector2D(0,0));
 	Pointer->MarkPendingKill();
+}
+
+bool UFFmpegWebcamManager::CheckValid()
+{
+	if(!daemonActor)return false;
+	if(!daemonActor->IsValidLowLevel()){
+		daemonActor = nullptr;
+		return false;
+	}
+	return true;
 }

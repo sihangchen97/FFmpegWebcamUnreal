@@ -23,6 +23,17 @@ enum EFFMPEG_Platform
 	FFMPEG_MAC   UMETA(DisplayName = "Mac"),
 };
 
+UCLASS()
+class FFMPEGWEBCAMUNREAL_API AFFmpegWebcamManagerDaemon : public AActor
+{
+	GENERATED_BODY()
+protected:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+public:
+	AVFormatContext* pFormatContext;
+	AVCodecContext* pCodecContext;
+};
+
 /**
  * 
  */
@@ -52,7 +63,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_MAC", EditConditionHides))
 	FString cameraIndex;
 
-	UPROPERTY(EditAnywhere, Category="Webcam Config")
+	UPROPERTY(EditAnywhere, Category="Webcam Config", BlueprintReadOnly)
 	FIntPoint videoSize;
 	
 	UPROPERTY(EditAnywhere, Category="Webcam Config")
@@ -81,5 +92,7 @@ private:
 	AVFrame* frame_bgra;
 	SwsContext* swsContext_bgra;
 
-	bool isOpen=false;
+	AFFmpegWebcamManagerDaemon* daemonActor;
+
+	bool CheckValid();
 };
