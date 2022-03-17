@@ -1,9 +1,19 @@
+@echo off
 
-set FFmpegZipUrl=http://file.intra.sensetime.com/seafhttp/files/9fd1d26e-3d1e-4850-815e-c5801d9d0004/ffmpeg-4.4.1-Win64.zip
-set FFmpegZip=ffmpeg-4.4.1-Win64.zip
+cd /d %~dp0
 
+mkdir download
 mkdir ThirdParty
-cd ThirdParty
 
-curl %FFmpegZipUrl% > %FFmpegZip%
-unzip %FFmpegZip%
+set FFmpegUrl=http://file.intra.sensetime.com/f/96626cac14/?raw=1
+
+if exist download/ffmpeg-4.4.1-Win64.zip (
+	echo ffmpeg-4.4.1-Win64.zip already exists
+) else (
+	utils\win\wget -P ./download %FFmpegUrl%
+)
+unzip -o -d ThirdParty download/ffmpeg-4.4.1-Win64.zip
+mkdir ..\..\Binaries\Win64
+xcopy ThirdParty\ffmpeg-4.4.1-Win64\lib ..\..\Binaries\Win64 /s /y
+
+pause
