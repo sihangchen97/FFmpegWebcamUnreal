@@ -1,10 +1,14 @@
 
-export FFmpegZipUrl=http://file.intra.sensetime.com/seafhttp/files/d8b60b02-fb16-4bcd-91a7-aa273357b03f/ffmpeg-4.4.1-Mac.zip
-export FFmpegZip=ffmpeg-4.4.1-Mac.zip
+export FFmpegUrl=http://file.intra.sensetime.com/f/39cc29cda3/?raw=1
 
 cd "`dirname "$0"`"
 
+mkdir download
 mkdir ThirdParty
-cd ThirdParty
-curl $FFmpegZipUrl > $FFmpegZip
-unzip $FFmpegZip
+
+if [ -e download/ffmpeg-4.4.1-Mac.zip ]
+then echo ffmpeg-4.4.1-Mac.zip already exists
+else utils/mac/wget $FFmpegUrl -O download/ffmpeg-4.4.1-Mac.zip
+fi
+
+unzip -o -d ThirdParty download/ffmpeg-4.4.1-Mac.zip
