@@ -4,6 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+extern "C"
+{
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#include <libavdevice/avdevice.h>
+#include <libavutil/imgutils.h>
+};
+
 
 class FFFmpegWebcamUnrealModule : public IModuleInterface
 {
@@ -13,3 +22,7 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 };
+
+void FFMPEG_LogCallback(void* ptr, int level, const char* fmt, va_list vl);
+bool FFMPEG_IsSaveToArray;
+TArray<FString> FFMPEG_LogArray;

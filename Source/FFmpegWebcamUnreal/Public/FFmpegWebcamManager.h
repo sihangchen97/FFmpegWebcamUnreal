@@ -54,14 +54,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam")
 	void DrawToCanvas(UCanvas* canvas);
 
-	UPROPERTY(EditAnywhere, Category="Webcam Config")
-	TEnumAsByte<EFFMPEG_Platform> platform;
-	
-	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_WINDOWS", EditConditionHides))
-	FString cameraName;
+	static void GetCameraList(TArray<FString> &list);
 
-	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(EditCondition="platform==EFFMPEG_Platform::FFMPEG_MAC", EditConditionHides))
-	FString cameraIndex;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Webcam Info")
+	bool updateCamera;
+	
+	UPROPERTY(VisibleAnywhere, Category="Webcam Info",Meta=(ShowOnlyInnerProperties)) 
+	TArray<FString> cameraList;
+	
+	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(ArrayClamp=cameraList))
+	int32 cameraIndex = -1;
+	
+	UPROPERTY(VisibleAnywhere, Category="Webcam Config", meta=(ArrayClamp=cameraList))
+	FString cameraName = "--No Webcam--";
 
 	UPROPERTY(EditAnywhere, Category="Webcam Config", BlueprintReadOnly)
 	FIntPoint videoSize;

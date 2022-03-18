@@ -1,7 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "FFmpegWebcamManager.h"
+
+#include "FFmpegWebcamUnreal.h"
 #include "Engine/Canvas.h"
+#include "Misc/MessageDialog.h"
 
 void AFFmpegWebcamManagerDaemon::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
@@ -37,7 +40,7 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 		av_dict_set(&options, "pixel_format", TCHAR_TO_ANSI(*pixelFormat), 0);
 
 #if PLATFORM_WINDOWS
-	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*(FString("video=")+cameraName)), ifmt, &options) !=0)
+	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*(FString("video=")+cameraList[cameraIndex])), ifmt, &options) !=0)
 #elif PLATFORM_MAC
 	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*cameraIndex), ifmt, &options) !=0)
 #endif
@@ -147,6 +150,63 @@ void UFFmpegWebcamManager::DrawToCanvas(UCanvas* canvas)
 	Pointer->UpdateResource();
 	canvas->K2_DrawTexture(Pointer,FVector2D(0,0),FVector2D(canvas->SizeX,canvas->SizeY),FVector2D(0,0));
 	Pointer->MarkPendingKill();
+}
+
+void UFFmpegWebcamManager::GetCameraList(TArray<FString>& list)
+{
+	avdevice_register_all();
+	AVFormatContext* pFmtCtx = avformat_alloc_context();
+	AVInputFormat *ifmt=NULL;
+#if PLATFORM_WINDOWS
+	ifmt = av_find_input_format("dshow");
+#elif PLATFORM_MAC
+	//ifmt = av_find_input_format("avfoundation");
+	#endif
+	if(ifmt == NULL){
+		UE_LOG(LogTemp, Warning, TEXT("Input Format Error"));
+		return;
+	}
+	
+	AVDictionary* options = NULL;
+	av_dict_set(&options, "list_devices", "true", 0);
+
+	FFMPEG_LogArray.Empty();
+	FFMPEG_IsSaveToArray = true;
+#if PLATFORM_WINDOWS
+	avformat_open_input(&pFmtCtx, NULL, ifmt, &options);
+#elif PLATFORM_MAC
+	//if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*cameraIndex), ifmt, &options) !=0)
+	#endif
+	FFMPEG_IsSaveToArray = false;
+	list.Empty();
+	for(int i=0;i<FFMPEG_LogArray.Num()-1;i++)
+	{
+		if(FFMPEG_LogArray[i].Find("DirectShow audio devices")!=INDEX_NONE)break;
+		if(FFMPEG_LogArray[i+1].Find("Alternative name")!=INDEX_NONE)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("LIST CAM :%s"),*FFMPEG_LogArray[i]);
+			int32 b = FFMPEG_LogArray[i].Find("\"", ESearchCase::IgnoreCase, ESearchDir::FromStart);
+			int32 e = FFMPEG_LogArray[i].Find("\"", ESearchCase::IgnoreCase, ESearchDir::FromEnd);
+			
+			list.Add(FFMPEG_LogArray[i].Mid(b+1, e-b-1));
+		}
+	}
+	FFMPEG_LogArray.Empty();
+}
+
+void UFFmpegWebcamManager::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	UE_LOG(LogTemp, Warning, TEXT("PostEditChangeProperty"));
+	if(updateCamera)
+	{
+		GetCameraList(cameraList);
+		cameraIndex = cameraList.Num() ? FMath::Clamp(cameraIndex, 0, cameraList.Num()-1) : -1;
+		cameraName = cameraList.Num() ? cameraList[cameraIndex] : "--No Webcam--";
+		FMessageDialog::Open(EAppMsgType::OkCancel, FText::FromString("Camera List Updated"));
+		updateCamera = false;
+	}
+	cameraName = cameraList.Num() ? cameraList[cameraIndex] : "--No Webcam--";
 }
 
 bool UFFmpegWebcamManager::CheckValid()
