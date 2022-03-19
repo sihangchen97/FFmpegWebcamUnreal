@@ -3,7 +3,7 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "FFmpegWebcamUnreal",
-	"Description": "Webcam Utils based on FFmpeg for Unreal Engine",
+	"Description": "Webcam Plugin based on FFmpeg for Unreal Engine",
 	"Category": "Other",
 	"CreatedBy": "chensihang",
 	"CreatedByURL": "https://github.com/sihangchen97",
