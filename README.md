@@ -16,11 +16,14 @@ Webcam Plugin based on FFmpeg for Unreal Engine
 
 ---
 ### 支持环境
+<div align="center">
 
 UE Version | Win64 | MacOS | Linux |
 :---------:|:-----:|:-----:|:-----:|
   UE 4.27  |   √   |   √   |   x   |
   ......   |  ...  |  ...  |  ...  |
+
+</div>
 
 ---
 ### 安装步骤
@@ -32,15 +35,19 @@ UE Version | Win64 | MacOS | Linux |
 ### 操作说明
 #### 创建FFmpegWebcamManager资产
 1. 在Content Viewer中点击 右键 - Miscellaneous - Data Asset
-![](doc/pic/create_asset_01.jpg)
+<div align="center"><img src=doc/pic/create_asset_01.jpg width=50% /></div>
+
+
+
 
 2. 在弹出的窗口中选择并双击FFmpegWebcamManager
-![](doc/pic/create_asset_02.jpg)
+<div align="center"><img src=doc/pic/create_asset_02.jpg width=50% /></div>
 
 3. 为新建的资产重命名后即完成资产的创建
 
 #### 配置资产
-![](doc/pic/configure_asset.jpg)
+<div align="center"><img src=doc/pic/configure_asset.jpg width=50% /></div>
+
 1. 搜索相机：点击Search Camera的方框进行相机的搜索，搜索结果将更新至Camera List中
 
 2. 设置相机：通过更改Camera Index进行相机的选择，并设置Video Size和Frame Rate
@@ -48,7 +55,8 @@ UE Version | Win64 | MacOS | Linux |
 3. 验证相机：设置完成后，可点击Check Camera的方框进行相机验证，验证结果将显示在Check Camera Log中，若验证失败，可以参照Log中的信息修改设置。
 
 #### 构建蓝图
-![](doc/pic/setup_blueprint.jpg)
+<div align="center"><img src=doc/pic/setup_blueprint.jpg /></div>
+
 1. 在蓝图中创建新的变量，设置变量类型为FFmpegWebcamManager，并将配置好的资产赋予该变量
 
 2. 根据所需完成蓝图构建，可参考Sample Map
