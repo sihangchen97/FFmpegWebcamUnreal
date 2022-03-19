@@ -19,42 +19,26 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 
 	avdevice_register_all();
 	pFormatContext = avformat_alloc_context();
-	AVInputFormat *ifmt=NULL;
-#if PLATFORM_WINDOWS
-	ifmt = av_find_input_format("dshow");
-#elif PLATFORM_MAC
-	ifmt = av_find_input_format("avfoundation");
-#endif
-	if(ifmt == NULL){
-		UE_LOG(LogTemp, Warning, TEXT("Input Format Error"));
-		return;
-	}
+	AVInputFormat *ifmt = av_find_input_format(PLATFORM_WINDOWS?"dshow" : PLATFORM_MAC?"avfoundation" : "");
 	
-	AVDictionary* options = NULL;
+	AVDictionary* options = nullptr;
 	av_dict_set(&options, "video_size", TCHAR_TO_ANSI(*(FString::FromInt(videoSize.X)+"x"+FString::FromInt(videoSize.Y))), 0);
 	av_dict_set(&options, "framerate", TCHAR_TO_ANSI(*(FString::FromInt(frameRate))), 0);
 
-	if(useVcodec)
-		av_dict_set(&options, "vcodec", TCHAR_TO_ANSI(*vcodec), 0);
-	else
-		av_dict_set(&options, "pixel_format", TCHAR_TO_ANSI(*pixelFormat), 0);
+	FString cameraURL = PLATFORM_WINDOWS?"video="+cameraName : PLATFORM_MAC?FString::FromInt(cameraIndex) : "";
 
-#if PLATFORM_WINDOWS
-	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*(FString("video=")+cameraList[cameraIndex])), ifmt, &options) !=0)
-#elif PLATFORM_MAC
-	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*cameraIndex), ifmt, &options) !=0)
-#endif
+	if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*cameraURL), ifmt, &options) !=0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to Open Camera"));
 		return;
 	}
 	
-	if(avformat_find_stream_info(pFormatContext, NULL)<0){
+	if(avformat_find_stream_info(pFormatContext, nullptr)<0){
 		UE_LOG(LogTemp, Warning, TEXT("Cannot find any stream"));
 		return;
 	}
 	
-	videoStream = NULL;
+	videoStream = nullptr;
 	UE_LOG(LogTemp, Warning, TEXT("Find %d Stream"),pFormatContext->nb_streams);
 	
 	for(uint8 i=0;i < pFormatContext->nb_streams;i++){
@@ -64,13 +48,13 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 		}
 	}
 	
-	if(videoStream == NULL){
+	if(videoStream == nullptr){
 		UE_LOG(LogTemp, Warning, TEXT("Cannot find any video stream"));
 		return;
 	}
 	
 	pCodec = avcodec_find_decoder(videoStream->codecpar->codec_id);
-	if(pCodec==NULL){
+	if(pCodec==nullptr){
 		UE_LOG(LogTemp, Warning, TEXT("Cannot Find Any Decoder"));
 		return;
 	}
@@ -78,7 +62,7 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 	pCodecContext = avcodec_alloc_context3(pCodec);
 	avcodec_parameters_to_context(pCodecContext, videoStream->codecpar);
 
-	if(avcodec_open2(pCodecContext, pCodec, NULL)!=0){
+	if(avcodec_open2(pCodecContext, pCodec, nullptr)!=0){
 		UE_LOG(LogTemp, Warning, TEXT("Cannot Open Decoder"));
 		return;
 	}
@@ -98,7 +82,7 @@ void UFFmpegWebcamManager::OpenCamera(bool &status)
 	swsContext_bgra = sws_getContext(videoSize.X, videoSize.Y, pCodecContext->pix_fmt,
 									   videoSize.X, videoSize.Y, AV_PIX_FMT_BGRA, SWS_BICUBIC, NULL, NULL, NULL);
 
-	if(swsContext_bgra==NULL){
+	if(swsContext_bgra==nullptr){
 		UE_LOG(LogTemp, Warning, TEXT("Cannot Get swsContent_brga"));
 		return;
 	}
@@ -154,44 +138,68 @@ void UFFmpegWebcamManager::DrawToCanvas(UCanvas* canvas)
 
 void UFFmpegWebcamManager::GetCameraList(TArray<FString>& list)
 {
+	list.Empty();
 	avdevice_register_all();
 	AVFormatContext* pFmtCtx = avformat_alloc_context();
-	AVInputFormat *ifmt=NULL;
-#if PLATFORM_WINDOWS
-	ifmt = av_find_input_format("dshow");
-#elif PLATFORM_MAC
-	//ifmt = av_find_input_format("avfoundation");
-	#endif
-	if(ifmt == NULL){
-		UE_LOG(LogTemp, Warning, TEXT("Input Format Error"));
-		return;
-	}
+	AVInputFormat *ifmt = av_find_input_format(PLATFORM_WINDOWS?"dshow" : PLATFORM_MAC?"avfoundation" : "");
 	
-	AVDictionary* options = NULL;
+	AVDictionary* options = nullptr;
 	av_dict_set(&options, "list_devices", "true", 0);
 
 	FFMPEG_LogArray.Empty();
 	FFMPEG_IsSaveToArray = true;
-#if PLATFORM_WINDOWS
-	avformat_open_input(&pFmtCtx, NULL, ifmt, &options);
-#elif PLATFORM_MAC
-	//if(avformat_open_input(&pFormatContext, TCHAR_TO_ANSI(*cameraIndex), ifmt, &options) !=0)
-	#endif
+	avformat_open_input(&pFmtCtx, nullptr, ifmt, &options);
 	FFMPEG_IsSaveToArray = false;
-	list.Empty();
-	for(int i=0;i<FFMPEG_LogArray.Num()-1;i++)
+	avformat_close_input(&pFmtCtx);
+	
+	for(int i=0;i<FFMPEG_LogArray.Num();i++)
 	{
+		#if PLATFORM_WINDOWS
 		if(FFMPEG_LogArray[i].Find("DirectShow audio devices")!=INDEX_NONE)break;
+		if(i==FFMPEG_LogArray.Num()-1)break;
 		if(FFMPEG_LogArray[i+1].Find("Alternative name")!=INDEX_NONE)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("LIST CAM :%s"),*FFMPEG_LogArray[i]);
 			int32 b = FFMPEG_LogArray[i].Find("\"", ESearchCase::IgnoreCase, ESearchDir::FromStart);
 			int32 e = FFMPEG_LogArray[i].Find("\"", ESearchCase::IgnoreCase, ESearchDir::FromEnd);
-			
 			list.Add(FFMPEG_LogArray[i].Mid(b+1, e-b-1));
 		}
+		#elif PLATFORM_MAC
+		if(FFMPEG_LogArray[i].Find("AVFoundation audio devices")!=INDEX_NONE)break;
+		if(FFMPEG_LogArray[i].Find("] ")!=INDEX_NONE)
+		{
+			int32 b = FFMPEG_LogArray[i].Find("] ", ESearchCase::IgnoreCase, ESearchDir::FromStart);
+			list.Add(FFMPEG_LogArray[i].Mid(b+2,FFMPEG_LogArray[i].Len()-b-3));
+		}
+		#endif
 	}
 	FFMPEG_LogArray.Empty();
+}
+
+bool UFFmpegWebcamManager::CheckCameraAvailable(FString& log)
+{
+	log.Empty();
+	avdevice_register_all();
+	AVFormatContext* pFmtCtx = avformat_alloc_context();
+	AVInputFormat *ifmt = av_find_input_format(PLATFORM_WINDOWS?"dshow" : PLATFORM_MAC?"avfoundation" : "");
+
+	AVDictionary* options = nullptr;
+	av_dict_set(&options, "video_size", TCHAR_TO_ANSI(*(FString::FromInt(videoSize.X)+"x"+FString::FromInt(videoSize.Y))), 0);
+	av_dict_set(&options, "framerate", TCHAR_TO_ANSI(*(FString::FromInt(frameRate))), 0);
+
+	FString cameraURL = PLATFORM_WINDOWS?"video="+cameraName : PLATFORM_MAC?FString::FromInt(cameraIndex) : "";
+
+	FFMPEG_LogArray.Empty();
+	FFMPEG_IsSaveToArray = true;
+	int result = avformat_open_input(&pFmtCtx, TCHAR_TO_ANSI(*cameraURL), ifmt, &options);
+	FFMPEG_IsSaveToArray = false;
+	avformat_close_input(&pFmtCtx);
+
+	log = result==0 ? "Check Result: OK" : "Check Result: Failed\n\n";
+	if(result==0)return true;
+	for(int i=0;i<FFMPEG_LogArray.Num();i++)
+		log += FFMPEG_LogArray[i];
+	FFMPEG_LogArray.Empty();
+	return false;
 }
 
 void UFFmpegWebcamManager::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
@@ -203,10 +211,16 @@ void UFFmpegWebcamManager::PostEditChangeProperty(FPropertyChangedEvent& Propert
 		GetCameraList(cameraList);
 		cameraIndex = cameraList.Num() ? FMath::Clamp(cameraIndex, 0, cameraList.Num()-1) : -1;
 		cameraName = cameraList.Num() ? cameraList[cameraIndex] : "--No Webcam--";
-		FMessageDialog::Open(EAppMsgType::OkCancel, FText::FromString("Camera List Updated"));
+		FMessageDialog::Open(EAppMsgType::Ok, FText::FromString("Camera List Updated"));
 		updateCamera = false;
 	}
 	cameraName = cameraList.Num() ? cameraList[cameraIndex] : "--No Webcam--";
+	if(checkCamera)
+	{
+		FMessageDialog::Open(EAppMsgType::Ok,
+			FText::FromString(CheckCameraAvailable(checkCameraLog)? "Camera check: OK": "Camera check: Failed"));
+		checkCamera = false;
+	}
 }
 
 bool UFFmpegWebcamManager::CheckValid()

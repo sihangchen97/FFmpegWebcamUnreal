@@ -54,7 +54,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam")
 	void DrawToCanvas(UCanvas* canvas);
 
+	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam")
 	static void GetCameraList(TArray<FString> &list);
+
+	UFUNCTION(BlueprintCallable, Category="FFmpeg Webcam")
+	bool CheckCameraAvailable(FString &log);
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 	
@@ -67,7 +71,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(ArrayClamp=cameraList))
 	int32 cameraIndex = -1;
 	
-	UPROPERTY(VisibleAnywhere, Category="Webcam Config", meta=(ArrayClamp=cameraList))
+	UPROPERTY(VisibleAnywhere, Category="Webcam Config")
 	FString cameraName = "--No Webcam--";
 
 	UPROPERTY(EditAnywhere, Category="Webcam Config", BlueprintReadOnly)
@@ -75,15 +79,12 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category="Webcam Config")
 	float frameRate;
-	
-	UPROPERTY(EditAnywhere, Category="Webcam Config")
-	bool useVcodec;
-	
-	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(EditCondition="!useVcodec", EditConditionHides))
-	FString pixelFormat;
-	
-	UPROPERTY(EditAnywhere, Category="Webcam Config", meta=(EditCondition="useVcodec", EditConditionHides))
-	FString vcodec;
+
+	UPROPERTY(EditDefaultsOnly, Category="Validation")
+	bool checkCamera;
+
+	UPROPERTY(VisibleAnywhere, Category="Validation")
+	FString checkCameraLog;
 
 	UPROPERTY(BlueprintReadOnly, Category="Image Buffer")
 	TArray<int32> imageBufferBRGA;
